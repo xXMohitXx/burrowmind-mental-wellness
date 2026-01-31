@@ -15,6 +15,9 @@ import '../../features/journal/presentation/screens/journal_screen.dart';
 import '../../features/mindfulness/presentation/screens/breathing_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/resources/presentation/screens/resources_screen.dart';
+import '../../features/community/presentation/screens/community_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../widgets/error_screen.dart';
 
 /// App Router Configuration
@@ -112,6 +115,20 @@ class AppRouter {
             builder: (context, state) => const ChatScreen(),
           ),
           
+          // Resources
+          GoRoute(
+            path: '/resources',
+            name: 'resources',
+            builder: (context, state) => const ResourcesScreen(),
+          ),
+          
+          // Community
+          GoRoute(
+            path: '/community',
+            name: 'community',
+            builder: (context, state) => const CommunityScreen(),
+          ),
+          
           // Profile
           GoRoute(
             path: '/profile',
@@ -127,9 +144,17 @@ class AppRouter {
         name: 'search',
         builder: (context, state) => const SearchScreen(),
       ),
+      
+      // Notifications (standalone)
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const NotificationsScreen(),
+      ),
     ],
     
     // Error page
     errorBuilder: (context, state) => ErrorScreen.notFound(),
   );
 }
+
