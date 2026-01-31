@@ -104,6 +104,52 @@ class SocialButton extends StatelessWidget {
   }
 }
 
+/// Secondary Button Widget
+class SecondaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback? onPressed;
+  final IconData? icon;
+  final double? width;
+
+  const SecondaryButton({
+    super.key,
+    required this.text,
+    this.onPressed,
+    this.icon,
+    this.width,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width ?? double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.divider),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, size: 20, color: AppColors.textSecondary),
+              const SizedBox(width: AppSpacing.sm),
+            ],
+            Text(
+              text,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Text Button Link
 class TextButtonLink extends StatelessWidget {
   final String text;

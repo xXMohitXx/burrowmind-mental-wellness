@@ -12,6 +12,7 @@ import '../../features/home/presentation/screens/search_screen.dart';
 import '../../features/mood/presentation/screens/mood_screen.dart';
 import '../../features/sleep/presentation/screens/sleep_screen.dart';
 import '../../features/journal/presentation/screens/journal_screen.dart';
+import '../../features/mindfulness/presentation/screens/breathing_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../widgets/error_screen.dart';
@@ -95,6 +96,13 @@ class AppRouter {
             path: '/sleep',
             name: 'sleep',
             builder: (context, state) => const SleepScreen(),
+          ),
+          
+          // Mindfulness
+          GoRoute(
+            path: '/mindfulness',
+            name: 'mindfulness',
+            builder: (context, state) => const MindfulnessScreen(),
           ),
           
           // Chat
