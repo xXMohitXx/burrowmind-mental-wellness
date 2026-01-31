@@ -10,6 +10,7 @@ import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/home/presentation/screens/main_shell.dart';
 import '../../features/home/presentation/screens/search_screen.dart';
 import '../../features/mood/presentation/screens/mood_screen.dart';
+import '../../features/sleep/presentation/screens/sleep_screen.dart';
 import '../../features/journal/presentation/screens/journal_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -87,6 +88,13 @@ class AppRouter {
             path: '/journal',
             name: 'journal',
             builder: (context, state) => const JournalScreen(),
+          ),
+          
+          // Sleep Tracker
+          GoRoute(
+            path: '/sleep',
+            name: 'sleep',
+            builder: (context, state) => const SleepScreen(),
           ),
           
           // Chat
