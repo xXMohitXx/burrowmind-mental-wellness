@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../features/onboarding/presentation/screens/splash_screen.dart';
-import '../features/onboarding/presentation/screens/welcome_screen.dart';
-import '../features/auth/presentation/screens/sign_in_screen.dart';
-import '../features/auth/presentation/screens/sign_up_screen.dart';
-import '../features/auth/presentation/screens/forgot_password_screen.dart';
-import '../features/home/presentation/screens/home_screen.dart';
-import '../features/home/presentation/screens/main_shell.dart';
+import '../../features/onboarding/presentation/screens/splash_screen.dart';
+import '../../features/onboarding/presentation/screens/welcome_screen.dart';
+import '../../features/auth/presentation/screens/sign_in_screen.dart';
+import '../../features/auth/presentation/screens/sign_up_screen.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
+import '../../features/auth/presentation/screens/profile_setup_screen.dart';
+import '../../features/home/presentation/screens/home_screen.dart';
+import '../../features/home/presentation/screens/main_shell.dart';
+import '../../features/home/presentation/screens/search_screen.dart';
+import '../../features/mood/presentation/screens/mood_screen.dart';
+import '../../features/journal/presentation/screens/journal_screen.dart';
+import '../../features/chat/presentation/screens/chat_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../widgets/error_screen.dart';
 
 /// App Router Configuration
 class AppRouter {
@@ -50,6 +57,11 @@ class AppRouter {
         name: 'forgotPassword',
         builder: (context, state) => const ForgotPasswordScreen(),
       ),
+      GoRoute(
+        path: '/profile-setup',
+        name: 'profileSetup',
+        builder: (context, state) => const ProfileSetupScreen(),
+      ),
       
       // Main App Shell with Bottom Navigation
       ShellRoute(
@@ -63,40 +75,32 @@ class AppRouter {
             builder: (context, state) => const HomeScreen(),
           ),
           
-          // Mood Tracker (placeholder)
+          // Mood Tracker
           GoRoute(
             path: '/mood',
             name: 'mood',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('Mood Tracker')),
-            ),
+            builder: (context, state) => const MoodScreen(),
           ),
           
-          // Journal (placeholder)
+          // Journal
           GoRoute(
             path: '/journal',
             name: 'journal',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('Journal')),
-            ),
+            builder: (context, state) => const JournalScreen(),
           ),
           
-          // Chat (placeholder)
+          // Chat
           GoRoute(
             path: '/chat',
             name: 'chat',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('AI Chat')),
-            ),
+            builder: (context, state) => const ChatScreen(),
           ),
           
-          // Profile (placeholder)
+          // Profile
           GoRoute(
             path: '/profile',
             name: 'profile',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('Profile')),
-            ),
+            builder: (context, state) => const ProfileScreen(),
           ),
         ],
       ),
@@ -105,29 +109,11 @@ class AppRouter {
       GoRoute(
         path: '/search',
         name: 'search',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Search')),
-        ),
+        builder: (context, state) => const SearchScreen(),
       ),
     ],
     
     // Error page
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text('Page not found: ${state.uri}'),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              child: const Text('Go Home'),
-            ),
-          ],
-        ),
-      ),
-    ),
+    errorBuilder: (context, state) => ErrorScreen.notFound(),
   );
 }

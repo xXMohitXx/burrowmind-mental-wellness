@@ -55,6 +55,7 @@ class AppColors {
   static const Color textSecondary = Color(0xFFB8B0A8);
   static const Color textTertiary = Color(0xFF8A8078);
   static const Color textDisabled = Color(0xFF5A5550);
+  static const Color textOnPrimary = Color(0xFFFAF8F5);
 
   // Status Colors
   static const Color success = Color(0xFF7A8B5C);

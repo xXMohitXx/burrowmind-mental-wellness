@@ -1,49 +1,59 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// Failure types for functional error handling
+sealed class Failure {
+  final String message;
+  final String? code;
 
-part 'failure.freezed.dart';
+  const Failure({required this.message, this.code});
+}
 
-/// Failure class for functional error handling
-@freezed
-class Failure with _$Failure {
-  const factory Failure.network({
-    required String message,
-    String? code,
-  }) = NetworkFailure;
+/// Network failure
+class NetworkFailure extends Failure {
+  const NetworkFailure({required super.message, super.code});
+}
 
-  const factory Failure.auth({
-    required String message,
-    String? code,
-  }) = AuthFailure;
+/// Authentication failure
+class AuthFailure extends Failure {
+  const AuthFailure({required super.message, super.code});
+}
 
-  const factory Failure.validation({
-    required String message,
-    String? code,
-    Map<String, List<String>>? fieldErrors,
-  }) = ValidationFailure;
+/// Validation failure
+class ValidationFailure extends Failure {
+  final Map<String, List<String>>? fieldErrors;
 
-  const factory Failure.database({
-    required String message,
-    String? code,
-  }) = DatabaseFailure;
+  const ValidationFailure({
+    required super.message,
+    super.code,
+    this.fieldErrors,
+  });
+}
 
-  const factory Failure.server({
-    required String message,
-    String? code,
-    int? statusCode,
-  }) = ServerFailure;
+/// Database failure
+class DatabaseFailure extends Failure {
+  const DatabaseFailure({required super.message, super.code});
+}
 
-  const factory Failure.cache({
-    required String message,
-    String? code,
-  }) = CacheFailure;
+/// Server failure
+class ServerFailure extends Failure {
+  final int? statusCode;
 
-  const factory Failure.ai({
-    required String message,
-    String? code,
-  }) = AIFailure;
+  const ServerFailure({
+    required super.message,
+    super.code,
+    this.statusCode,
+  });
+}
 
-  const factory Failure.unknown({
-    required String message,
-    String? code,
-  }) = UnknownFailure;
+/// Cache failure
+class CacheFailure extends Failure {
+  const CacheFailure({required super.message, super.code});
+}
+
+/// AI failure
+class AIFailure extends Failure {
+  const AIFailure({required super.message, super.code});
+}
+
+/// Unknown failure
+class UnknownFailure extends Failure {
+  const UnknownFailure({required super.message, super.code});
 }

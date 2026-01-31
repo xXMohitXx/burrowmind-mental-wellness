@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_spacing.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
 
 /// Loading Indicator Widget
 class LoadingIndicator extends StatelessWidget {
@@ -46,7 +46,7 @@ class LoadingScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.lg),
               Text(
                 message!,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ],
@@ -138,7 +138,7 @@ class LoadingOverlay extends StatelessWidget {
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       message!,
-                      style: const TextStyle(color: AppColors.textPrimary),
+                      style: TextStyle(color: AppColors.textPrimary),
                     ),
                   ],
                 ],

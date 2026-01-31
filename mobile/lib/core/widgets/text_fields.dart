@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_spacing.dart';
-import '../../theme/app_typography.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_typography.dart';
 
 /// Custom Text Form Field
 class AppTextField extends StatelessWidget {
@@ -117,7 +117,7 @@ class _PasswordTextFieldState extends State<PasswordTextField> {
       onChanged: widget.onChanged,
       focusNode: widget.focusNode,
       textInputAction: widget.textInputAction,
-      prefixIcon: const Icon(Icons.lock_outline, color: AppColors.textTertiary),
+      prefixIcon: Icon(Icons.lock_outline, color: AppColors.textTertiary),
       suffixIcon: IconButton(
         icon: Icon(
           _obscureText ? Icons.visibility_off : Icons.visibility,
@@ -162,10 +162,10 @@ class SearchTextField extends StatelessWidget {
       style: AppTypography.bodyMedium,
       decoration: InputDecoration(
         hintText: hint ?? 'Search...',
-        prefixIcon: const Icon(Icons.search, color: AppColors.textTertiary),
+        prefixIcon: Icon(Icons.search, color: AppColors.textTertiary),
         suffixIcon: controller?.text.isNotEmpty == true
             ? IconButton(
-                icon: const Icon(Icons.close, color: AppColors.textTertiary),
+                icon: Icon(Icons.close, color: AppColors.textTertiary),
                 onPressed: () {
                   controller?.clear();
                   onClear?.call();
