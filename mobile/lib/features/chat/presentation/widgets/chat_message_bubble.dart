@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../screens/chat_screen.dart';
+import '../../../../core/providers/chat_provider.dart';
 
 /// Chat Message Bubble Widget
 class ChatMessageBubble extends StatelessWidget {
@@ -28,9 +28,7 @@ class ChatMessageBubble extends StatelessWidget {
             _buildAvatar()
           else if (!message.isUser)
             const SizedBox(width: 40),
-
           const SizedBox(width: AppSpacing.sm),
-
           Flexible(
             child: Container(
               constraints: BoxConstraints(
@@ -73,7 +71,7 @@ class ChatMessageBubble extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
-                    _formatTime(message.timestamp),
+                    _formatTime(message.createdAt),
                     style: AppTypography.caption.copyWith(
                       color: message.isUser
                           ? AppColors.textPrimary.withValues(alpha: 0.7)
@@ -85,7 +83,6 @@ class ChatMessageBubble extends StatelessWidget {
               ),
             ),
           ),
-
           if (message.isUser) const SizedBox(width: AppSpacing.sm),
         ],
       ),
@@ -112,7 +109,8 @@ class ChatMessageBubble extends StatelessWidget {
   }
 
   String _formatTime(DateTime time) {
-    final hour = time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour);
+    final hour =
+        time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour);
     final period = time.hour >= 12 ? 'PM' : 'AM';
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute $period';

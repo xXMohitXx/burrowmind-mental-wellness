@@ -55,6 +55,19 @@ class SleepDao {
     return results;
   }
 
+  /// Get last night's sleep (most recent entry)
+  Future<Map<String, dynamic>?> getLastNightSleep(String userId) async {
+    final db = await _database.database;
+    final results = await db.query(
+      'sleep_entries',
+      where: 'user_id = ?',
+      whereArgs: [userId],
+      orderBy: 'created_at DESC',
+      limit: 1,
+    );
+    return results.isNotEmpty ? results.first : null;
+  }
+
   /// Get sleep entries for a date range
   Future<List<Map<String, dynamic>>> getSleepEntriesInRange({
     required String userId,

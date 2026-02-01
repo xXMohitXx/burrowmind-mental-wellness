@@ -110,4 +110,26 @@ class ConversationDao {
     );
     return (result.first['count'] as int?) ?? 0;
   }
+
+  /// Alias for getSessionMessages - for compatibility
+  Future<List<Map<String, dynamic>>> getConversation({
+    required String sessionId,
+  }) async {
+    return getSessionMessages(sessionId: sessionId);
+  }
+
+  /// Alias for createMessage - for compatibility
+  Future<String> addMessage({
+    required String userId,
+    required String sessionId,
+    required String role,
+    required String content,
+  }) async {
+    return createMessage(
+      userId: userId,
+      sessionId: sessionId,
+      role: role,
+      content: content,
+    );
+  }
 }

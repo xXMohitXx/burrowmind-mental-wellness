@@ -4,30 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../widgets/chat_message_bubble.dart';
+import '../../../../core/providers/chat_provider.dart';
 import '../widgets/chat_input_bar.dart';
 import '../widgets/chat_suggestions.dart';
 
-/// Chat Message Model
-class ChatMessage {
-  final String id;
-  final String content;
-  final bool isUser;
-  final DateTime timestamp;
-  final MessageType type;
-
-  const ChatMessage({
-    required this.id,
-    required this.content,
-    required this.isUser,
-    required this.timestamp,
-    this.type = MessageType.text,
-  });
-}
-
-enum MessageType { text, mood, activity, resource }
-
-/// Chat Screen - AI Therapy Companion
+/// Chat Screen - AI Therapy Companion with Groq Integration
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
 
@@ -40,18 +21,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
-  
-  bool _isTyping = false;
   bool _showSuggestions = true;
-  
-  final List<ChatMessage> _messages = [
-    ChatMessage(
-      id: '0',
-      content: 'Hi there! 👋 I\'m Burrow, your mental wellness companion. How are you feeling today?',
-      isUser: false,
-      timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
-    ),
-  ];
 
   @override
   void dispose() {
@@ -63,6 +33,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   @override
   Widget build(BuildContext context) {
+    final chatState = ref.watch(chatProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: _buildAppBar(),
@@ -70,11 +42,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         children: [
           // Chat messages
           Expanded(
-            child: _buildMessageList(),
+            child: _buildMessageList(chatState.messages),
           ),
 
           // Suggestions
-          if (_showSuggestions && _messages.length < 3)
+          if (_showSuggestions && chatState.messages.isEmpty)
             ChatSuggestions(
               onSuggestionTap: (suggestion) {
                 _sendMessage(suggestion);
@@ -83,7 +55,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
             ),
 
           // Typing indicator
-          if (_isTyping) _buildTypingIndicator(),
+          if (chatState.isLoading) _buildTypingIndicator(),
 
           // Input bar
           ChatInputBar(
@@ -129,7 +101,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Burrow',
+                  'Burrow AI',
                   style: AppTypography.titleMedium.copyWith(
                     color: AppColors.textPrimary,
                   ),
@@ -146,7 +118,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
                     ),
                     const SizedBox(width: AppSpacing.xxs),
                     Text(
-                      'Online',
+                      'Powered by Groq',
                       style: AppTypography.caption.copyWith(
                         color: AppColors.success,
                       ),
@@ -160,6 +132,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.refresh),
+          onPressed: () => ref.read(chatProvider.notifier).startNewSession(),
+          tooltip: 'New conversation',
+        ),
+        IconButton(
           icon: const Icon(Icons.more_vert),
           onPressed: () => _showChatMenu(context),
         ),
@@ -167,21 +144,109 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
     );
   }
 
-  Widget _buildMessageList() {
+  Widget _buildMessageList(List<ChatMessage> messages) {
+    if (messages.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.primary, AppColors.tertiary],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Text('🦊', style: TextStyle(fontSize: 40)),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              'Hi! I\'m Burrow',
+              style: AppTypography.headlineSmall.copyWith(
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              child: Text(
+                'Your AI mental wellness companion. How are you feeling today?',
+                textAlign: TextAlign.center,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
-      itemCount: _messages.length,
+      itemCount: messages.length,
       itemBuilder: (context, index) {
-        final message = _messages[index];
-        final showAvatar = !message.isUser &&
-            (index == 0 || _messages[index - 1].isUser);
-
-        return ChatMessageBubble(
-          message: message,
-          showAvatar: showAvatar,
-        );
+        final message = messages[index];
+        return _buildMessageBubble(message, index, messages);
       },
+    );
+  }
+
+  Widget _buildMessageBubble(
+      ChatMessage message, int index, List<ChatMessage> messages) {
+    final isUser = message.isUser;
+    final showAvatar = !isUser && (index == 0 || messages[index - 1].isUser);
+
+    return Padding(
+      padding: EdgeInsets.only(
+        top: index == 0 ? 0 : AppSpacing.sm,
+        bottom: AppSpacing.sm,
+      ),
+      child: Row(
+        mainAxisAlignment:
+            isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isUser && showAvatar)
+            Container(
+              width: 32,
+              height: 32,
+              margin: const EdgeInsets.only(right: AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: const Center(
+                child: Text('🦊', style: TextStyle(fontSize: 16)),
+              ),
+            )
+          else if (!isUser)
+            const SizedBox(width: 40),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm + 2,
+              ),
+              decoration: BoxDecoration(
+                color: isUser ? AppColors.primary : AppColors.card,
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+              ),
+              child: Text(
+                message.content,
+                style: AppTypography.bodyMedium.copyWith(
+                  color: isUser ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -239,7 +304,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: AppColors.textTertiary.withValues(alpha: 0.5 + (value * 0.5)),
+            color:
+                AppColors.textTertiary.withValues(alpha: 0.5 + (value * 0.5)),
             shape: BoxShape.circle,
           ),
         );
@@ -250,49 +316,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
   void _sendMessage(String content) {
     if (content.trim().isEmpty) return;
 
-    final userMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: content.trim(),
-      isUser: true,
-      timestamp: DateTime.now(),
-    );
-
-    setState(() {
-      _messages.add(userMessage);
-      _messageController.clear();
-      _isTyping = true;
-    });
-
-    _scrollToBottom();
-
-    // Simulate AI response
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        _receiveAIResponse(content);
-      }
-    });
-  }
-
-  void _receiveAIResponse(String userMessage) {
-    final responses = [
-      'I hear you. It sounds like you\'re going through a lot right now. Would you like to explore these feelings together?',
-      'Thank you for sharing that with me. How long have you been feeling this way?',
-      'That\'s completely valid. Many people experience similar feelings. What do you think triggered this?',
-      'I appreciate you opening up. On a scale of 1-10, how would you rate your current emotional state?',
-      'It takes courage to talk about these things. Is there anything specific that might help you feel better right now?',
-    ];
-
-    final aiMessage = ChatMessage(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      content: responses[_messages.length % responses.length],
-      isUser: false,
-      timestamp: DateTime.now(),
-    );
-
-    setState(() {
-      _isTyping = false;
-      _messages.add(aiMessage);
-    });
+    _messageController.clear();
+    ref.read(chatProvider.notifier).sendMessage(content.trim());
 
     _scrollToBottom();
   }
@@ -311,7 +336,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
 
   void _startVoiceInput() {
     HapticFeedback.lightImpact();
-    // TODO: Implement voice input
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Voice input coming soon!'),
@@ -350,29 +374,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
             ),
             const SizedBox(height: AppSpacing.lg),
             ListTile(
-              leading: const Icon(Icons.history, color: AppColors.textSecondary),
-              title: const Text('Chat History'),
-              onTap: () => Navigator.pop(context),
+              leading:
+                  const Icon(Icons.refresh, color: AppColors.textSecondary),
+              title: const Text('New Conversation'),
+              onTap: () {
+                Navigator.pop(context);
+                ref.read(chatProvider.notifier).startNewSession();
+                setState(() => _showSuggestions = true);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.mood, color: AppColors.textSecondary),
               title: const Text('Quick Mood Check'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.self_improvement, color: AppColors.textSecondary),
-              title: const Text('Guided Exercises'),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: AppColors.error),
-              title: Text(
-                'Clear Conversation',
-                style: TextStyle(color: AppColors.error),
-              ),
               onTap: () {
                 Navigator.pop(context);
-                _clearConversation();
+                _sendMessage("I'd like to do a quick mood check");
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.self_improvement,
+                  color: AppColors.textSecondary),
+              title: const Text('Breathing Exercise'),
+              onTap: () {
+                Navigator.pop(context);
+                _sendMessage("Guide me through a breathing exercise");
               },
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -380,18 +405,5 @@ class _ChatScreenState extends ConsumerState<ChatScreen>
         ),
       ),
     );
-  }
-
-  void _clearConversation() {
-    setState(() {
-      _messages.clear();
-      _messages.add(ChatMessage(
-        id: '0',
-        content: 'Hi there! 👋 I\'m Burrow, your mental wellness companion. How are you feeling today?',
-        isUser: false,
-        timestamp: DateTime.now(),
-      ));
-      _showSuggestions = true;
-    });
   }
 }
