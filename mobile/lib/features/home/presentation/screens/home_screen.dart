@@ -140,8 +140,9 @@ class HomeScreen extends StatelessWidget {
                   vertical: AppSpacing.xs,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  borderRadius:
+                      BorderRadius.circular(AppSpacing.buttonRadiusPill),
                 ),
                 child: Text(
                   'Good',
@@ -268,9 +269,9 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -376,8 +377,9 @@ class HomeScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+                  color: AppColors.secondary.withValues(alpha: 0.2),
+                  borderRadius:
+                      BorderRadius.circular(AppSpacing.cardRadiusSmall),
                 ),
                 child: const Icon(
                   Icons.edit_note,

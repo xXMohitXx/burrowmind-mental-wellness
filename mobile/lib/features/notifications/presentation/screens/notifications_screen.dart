@@ -9,7 +9,8 @@ class AppNotification {
   final String id;
   final String title;
   final String message;
-  final String type; // 'reminder', 'achievement', 'insight', 'community', 'system'
+  final String
+      type; // 'reminder', 'achievement', 'insight', 'community', 'system'
   final DateTime timestamp;
   final bool isRead;
   final String? actionRoute;
@@ -39,7 +40,8 @@ final notificationsProvider = StateProvider<List<AppNotification>>((ref) {
     AppNotification(
       id: '2',
       title: '🎉 7-Day Streak!',
-      message: 'Congratulations! You\'ve journaled for 7 days in a row. Keep it up!',
+      message:
+          'Congratulations! You\'ve journaled for 7 days in a row. Keep it up!',
       type: 'achievement',
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
       isRead: true,
@@ -47,7 +49,8 @@ final notificationsProvider = StateProvider<List<AppNotification>>((ref) {
     AppNotification(
       id: '3',
       title: 'Weekly Insight',
-      message: 'Your mood has improved 15% compared to last week. Great progress!',
+      message:
+          'Your mood has improved 15% compared to last week. Great progress!',
       type: 'insight',
       timestamp: DateTime.now().subtract(const Duration(hours: 5)),
       actionRoute: '/mood',
@@ -76,7 +79,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -131,7 +135,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
                 return InkWell(
                   onTap: () => setState(() => _selectedFilter = filter),
-                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                  borderRadius:
+                      BorderRadius.circular(AppSpacing.buttonRadiusPill),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -139,7 +144,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.secondary : AppColors.card,
-                      borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.buttonRadiusPill),
                       border: isSelected
                           ? null
                           : Border.all(color: AppColors.divider),
@@ -165,7 +171,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 : ListView.separated(
                     padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
                     itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+                    separatorBuilder: (_, __) =>
+                        const SizedBox(height: AppSpacing.md),
                     itemBuilder: (context, index) {
                       return _buildNotificationCard(filtered[index]);
                     },
@@ -176,14 +183,17 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     );
   }
 
-  List<AppNotification> _filterNotifications(List<AppNotification> notifications) {
+  List<AppNotification> _filterNotifications(
+      List<AppNotification> notifications) {
     switch (_selectedFilter) {
       case 'Unread':
         return notifications.where((n) => !n.isRead).toList();
       case 'Reminders':
         return notifications.where((n) => n.type == 'reminder').toList();
       case 'Insights':
-        return notifications.where((n) => n.type == 'insight' || n.type == 'achievement').toList();
+        return notifications
+            .where((n) => n.type == 'insight' || n.type == 'achievement')
+            .toList();
       default:
         return notifications;
     }
@@ -199,7 +209,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           color: notification.isRead ? AppColors.card : AppColors.card,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
           border: Border.all(
-            color: notification.isRead ? AppColors.divider : AppColors.secondary,
+            color:
+                notification.isRead ? AppColors.divider : AppColors.secondary,
           ),
         ),
         child: Row(
@@ -303,23 +314,35 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
   Color _getTypeColor(String type) {
     switch (type) {
-      case 'reminder': return AppColors.primary;
-      case 'achievement': return AppColors.moodExcellent;
-      case 'insight': return AppColors.tertiary;
-      case 'community': return AppColors.secondary;
-      case 'system': return AppColors.info;
-      default: return AppColors.textSecondary;
+      case 'reminder':
+        return AppColors.primary;
+      case 'achievement':
+        return AppColors.moodExcellent;
+      case 'insight':
+        return AppColors.tertiary;
+      case 'community':
+        return AppColors.secondary;
+      case 'system':
+        return AppColors.info;
+      default:
+        return AppColors.textSecondary;
     }
   }
 
   IconData _getTypeIcon(String type) {
     switch (type) {
-      case 'reminder': return Icons.notifications_active;
-      case 'achievement': return Icons.emoji_events;
-      case 'insight': return Icons.insights;
-      case 'community': return Icons.people;
-      case 'system': return Icons.settings;
-      default: return Icons.notifications;
+      case 'reminder':
+        return Icons.notifications_active;
+      case 'achievement':
+        return Icons.emoji_events;
+      case 'insight':
+        return Icons.insights;
+      case 'community':
+        return Icons.people;
+      case 'system':
+        return Icons.settings;
+      default:
+        return Icons.notifications;
     }
   }
 
@@ -395,7 +418,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
             _buildSettingSwitch('Achievements', true),
             const SizedBox(height: AppSpacing.lg),
             ListTile(
-              leading: const Icon(Icons.schedule, color: AppColors.textSecondary),
+              leading:
+                  const Icon(Icons.schedule, color: AppColors.textSecondary),
               title: const Text('Quiet Hours'),
               subtitle: const Text('10:00 PM - 7:00 AM'),
               trailing: const Icon(Icons.chevron_right),
@@ -413,7 +437,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       title: Text(title),
       value: value,
       onChanged: (v) {},
-      activeColor: AppColors.secondary,
+      activeThumbColor: AppColors.secondary,
     );
   }
 }

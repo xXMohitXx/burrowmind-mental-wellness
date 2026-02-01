@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -224,7 +223,11 @@ class _MoodScreenState extends ConsumerState<MoodScreen>
 
   Widget _buildMoodTimeline() {
     final moods = [
-      {'time': '9:00 AM', 'mood': '😊', 'note': 'Morning coffee, feeling energized'},
+      {
+        'time': '9:00 AM',
+        'mood': '😊',
+        'note': 'Morning coffee, feeling energized'
+      },
       {'time': '12:30 PM', 'mood': '😌', 'note': 'After lunch, slightly tired'},
       {'time': '3:00 PM', 'mood': '😊', 'note': 'Good meeting at work'},
     ];
@@ -393,8 +396,16 @@ class _MoodLogSheetState extends State<MoodLogSheet> {
   final List<String> _selectedFactors = [];
 
   final _factors = [
-    'Work', 'Family', 'Health', 'Sleep', 'Exercise',
-    'Weather', 'Social', 'Food', 'Stress', 'Relaxation',
+    'Work',
+    'Family',
+    'Health',
+    'Sleep',
+    'Exercise',
+    'Weather',
+    'Social',
+    'Food',
+    'Stress',
+    'Relaxation',
   ];
 
   @override
@@ -482,15 +493,20 @@ class _MoodLogSheetState extends State<MoodLogSheet> {
                       color: isSelected
                           ? AppColors.primary.withValues(alpha: 0.2)
                           : AppColors.inputBackground,
-                      borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.buttonRadiusPill),
                       border: Border.all(
-                        color: isSelected ? AppColors.primary : AppColors.inputBorder,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.inputBorder,
                       ),
                     ),
                     child: Text(
                       factor,
                       style: AppTypography.labelMedium.copyWith(
-                        color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ),

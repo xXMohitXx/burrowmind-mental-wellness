@@ -30,14 +30,15 @@ class WelcomeScreen extends StatelessWidget {
             child: Column(
               children: [
                 const Spacer(flex: 1),
-                
+
                 // Illustration placeholder
                 Container(
                   width: 280,
                   height: 280,
                   decoration: BoxDecoration(
                     color: AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadiusLarge),
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.cardRadiusLarge),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -46,7 +47,7 @@ class WelcomeScreen extends StatelessWidget {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -63,9 +64,9 @@ class WelcomeScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 const Spacer(flex: 1),
-                
+
                 // Title and description
                 Text(
                   'Welcome to BurrowMind',
@@ -82,9 +83,9 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const Spacer(flex: 2),
-                
+
                 // Buttons
                 PrimaryButton(
                   text: 'Get Started',
@@ -96,9 +97,9 @@ class WelcomeScreen extends StatelessWidget {
                   isOutlined: true,
                   onPressed: () => context.go('/sign-in'),
                 ),
-                
+
                 const SizedBox(height: AppSpacing.xl),
-                
+
                 // Privacy notice
                 Text(
                   'By continuing, you agree to our Terms of Service\nand Privacy Policy',
@@ -107,7 +108,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: AppSpacing.lg),
               ],
             ),

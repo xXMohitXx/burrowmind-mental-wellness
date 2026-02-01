@@ -55,7 +55,7 @@ class AppTheme {
       // Navigation Bar Theme (Material 3)
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primary.withOpacity(0.2),
+        indicatorColor: AppColors.primary.withValues(alpha: 0.2),
         height: AppSpacing.bottomNavHeight,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith((states) {
@@ -147,7 +147,8 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          borderSide: const BorderSide(color: AppColors.inputFocusBorder, width: 2),
+          borderSide:
+              const BorderSide(color: AppColors.inputFocusBorder, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
@@ -157,15 +158,17 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           borderSide: const BorderSide(color: AppColors.error, width: 2),
         ),
-        hintStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary),
-        labelStyle: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+        hintStyle:
+            AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary),
+        labelStyle:
+            AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
         errorStyle: AppTypography.bodySmall.copyWith(color: AppColors.error),
       ),
 
       // Chip Theme
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface,
-        selectedColor: AppColors.primary.withOpacity(0.2),
+        selectedColor: AppColors.primary.withValues(alpha: 0.2),
         labelStyle: AppTypography.labelMedium,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
         shape: RoundedRectangleBorder(
@@ -184,7 +187,7 @@ class AppTheme {
         }),
         trackColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return AppColors.primary.withOpacity(0.3);
+            return AppColors.primary.withValues(alpha: 0.3);
           }
           return AppColors.surface;
         }),
@@ -195,7 +198,7 @@ class AppTheme {
         activeTrackColor: AppColors.primary,
         inactiveTrackColor: AppColors.surface,
         thumbColor: AppColors.primary,
-        overlayColor: AppColors.primary.withOpacity(0.2),
+        overlayColor: AppColors.primary.withValues(alpha: 0.2),
         trackHeight: 4,
         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
       ),

@@ -42,7 +42,8 @@ class ProfileScreen extends ConsumerWidget {
             _buildMenuSection(context, 'Account', [
               _MenuItem(Icons.person_outline, 'Edit Profile', () {}),
               _MenuItem(Icons.lock_outline, 'Privacy & Security', () {}),
-              _MenuItem(Icons.notifications_outlined, 'Notification Settings', () => context.push('/notifications')),
+              _MenuItem(Icons.notifications_outlined, 'Notification Settings',
+                  () => context.push('/notifications')),
             ]),
 
             const SizedBox(height: AppSpacing.md),
@@ -63,7 +64,8 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
 
             _buildMenuSection(context, 'Support', [
-              _MenuItem(Icons.help_outline, 'Help Center', () => _showHelpCenter(context)),
+              _MenuItem(Icons.help_outline, 'Help Center',
+                  () => _showHelpCenter(context)),
               _MenuItem(Icons.feedback_outlined, 'Send Feedback', () {}),
               _MenuItem(Icons.info_outline, 'About', () => _showAbout(context)),
             ]),
@@ -204,12 +206,14 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMenuSection(BuildContext context, String title, List<_MenuItem> items) {
+  Widget _buildMenuSection(
+      BuildContext context, String title, List<_MenuItem> items) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: AppSpacing.sm, bottom: AppSpacing.sm),
+          padding:
+              const EdgeInsets.only(left: AppSpacing.sm, bottom: AppSpacing.sm),
           child: Text(
             title,
             style: AppTypography.labelMedium.copyWith(
@@ -298,21 +302,21 @@ class ProfileScreen extends ConsumerWidget {
               subtitle: const Text('Use dark theme'),
               value: true,
               onChanged: (v) {},
-              activeColor: AppColors.secondary,
+              activeThumbColor: AppColors.secondary,
             ),
             SwitchListTile(
               title: const Text('Haptic Feedback'),
               subtitle: const Text('Vibrations on interactions'),
               value: true,
               onChanged: (v) {},
-              activeColor: AppColors.secondary,
+              activeThumbColor: AppColors.secondary,
             ),
             SwitchListTile(
               title: const Text('Biometric Lock'),
               subtitle: const Text('Require fingerprint to open'),
               value: false,
               onChanged: (v) {},
-              activeColor: AppColors.secondary,
+              activeThumbColor: AppColors.secondary,
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
@@ -583,19 +587,21 @@ class HelpCenterScreen extends StatelessWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        children: questions.map((q) => ListTile(
-          title: Text(
-            q,
-            style: AppTypography.bodyMedium.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-          trailing: const Icon(
-            Icons.chevron_right,
-            color: AppColors.textTertiary,
-          ),
-          onTap: () {},
-        )).toList(),
+        children: questions
+            .map((q) => ListTile(
+                  title: Text(
+                    q,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textTertiary,
+                  ),
+                  onTap: () {},
+                ))
+            .toList(),
       ),
     );
   }

@@ -17,11 +17,31 @@ class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
 
   static const _navItems = [
-    _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Home', path: '/home'),
-    _NavItem(icon: Icons.mood_outlined, activeIcon: Icons.mood, label: 'Mood', path: '/mood'),
-    _NavItem(icon: Icons.book_outlined, activeIcon: Icons.book, label: 'Journal', path: '/journal'),
-    _NavItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Chat', path: '/chat'),
-    _NavItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Profile', path: '/profile'),
+    _NavItem(
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home,
+        label: 'Home',
+        path: '/home'),
+    _NavItem(
+        icon: Icons.mood_outlined,
+        activeIcon: Icons.mood,
+        label: 'Mood',
+        path: '/mood'),
+    _NavItem(
+        icon: Icons.book_outlined,
+        activeIcon: Icons.book,
+        label: 'Journal',
+        path: '/journal'),
+    _NavItem(
+        icon: Icons.chat_bubble_outline,
+        activeIcon: Icons.chat_bubble,
+        label: 'Chat',
+        path: '/chat'),
+    _NavItem(
+        icon: Icons.person_outline,
+        activeIcon: Icons.person,
+        label: 'Profile',
+        path: '/profile'),
   ];
 
   @override
@@ -87,9 +107,10 @@ class _MainShellState extends State<MainShell> {
               padding: const EdgeInsets.all(AppSpacing.sm),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withOpacity(0.2)
+                    ? AppColors.primary.withValues(alpha: 0.2)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusSmall),
+                borderRadius:
+                    BorderRadius.circular(AppSpacing.buttonRadiusSmall),
               ),
               child: Icon(
                 isSelected ? item.activeIcon : item.icon,

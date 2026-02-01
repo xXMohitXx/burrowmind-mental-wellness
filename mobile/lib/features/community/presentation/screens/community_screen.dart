@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/buttons.dart';
 
 /// Community Post Model
 class CommunityPost {
@@ -37,7 +36,8 @@ final communityPostsProvider = StateProvider<List<CommunityPost>>((ref) {
       id: '1',
       authorName: 'Sarah M.',
       authorAvatar: 'S',
-      content: 'Just completed my 30-day meditation streak! 🧘‍♀️ The journey was challenging but so worth it. My anxiety levels have dropped significantly.',
+      content:
+          'Just completed my 30-day meditation streak! 🧘‍♀️ The journey was challenging but so worth it. My anxiety levels have dropped significantly.',
       timestamp: DateTime.now().subtract(const Duration(hours: 2)),
       likes: 47,
       comments: 12,
@@ -48,7 +48,8 @@ final communityPostsProvider = StateProvider<List<CommunityPost>>((ref) {
       id: '2',
       authorName: 'Michael R.',
       authorAvatar: 'M',
-      content: 'Struggling with sleep lately. Any tips from the community? I\'ve tried the breathing exercises but still wake up multiple times.',
+      content:
+          'Struggling with sleep lately. Any tips from the community? I\'ve tried the breathing exercises but still wake up multiple times.',
       timestamp: DateTime.now().subtract(const Duration(hours: 5)),
       likes: 23,
       comments: 31,
@@ -58,7 +59,8 @@ final communityPostsProvider = StateProvider<List<CommunityPost>>((ref) {
       id: '3',
       authorName: 'Emma T.',
       authorAvatar: 'E',
-      content: 'Gratitude journal entry: Today I\'m grateful for my supportive family, this beautiful weather, and the small wins at work. What are you grateful for today?',
+      content:
+          'Gratitude journal entry: Today I\'m grateful for my supportive family, this beautiful weather, and the small wins at work. What are you grateful for today?',
       timestamp: DateTime.now().subtract(const Duration(hours: 8)),
       likes: 89,
       comments: 45,
@@ -68,7 +70,8 @@ final communityPostsProvider = StateProvider<List<CommunityPost>>((ref) {
       id: '4',
       authorName: 'James K.',
       authorAvatar: 'J',
-      content: 'Week 2 of daily journaling. It\'s incredible how writing down my thoughts helps me process emotions. Highly recommend to anyone hesitant to start.',
+      content:
+          'Week 2 of daily journaling. It\'s incredible how writing down my thoughts helps me process emotions. Highly recommend to anyone hesitant to start.',
       timestamp: DateTime.now().subtract(const Duration(days: 1)),
       likes: 56,
       comments: 8,
@@ -129,7 +132,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
                 return InkWell(
                   onTap: () => setState(() => _selectedFilter = filter),
-                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                  borderRadius:
+                      BorderRadius.circular(AppSpacing.buttonRadiusPill),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -137,7 +141,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.secondary : AppColors.card,
-                      borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.buttonRadiusPill),
                       border: isSelected
                           ? null
                           : Border.all(color: AppColors.divider),
@@ -161,7 +166,8 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             child: ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
               itemCount: posts.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+              separatorBuilder: (_, __) =>
+                  const SizedBox(height: AppSpacing.md),
               itemBuilder: (context, index) {
                 return _buildPostCard(posts[index]);
               },
@@ -255,22 +261,25 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
               const SizedBox(height: AppSpacing.md),
               Wrap(
                 spacing: AppSpacing.sm,
-                children: post.tags.map((tag) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.sm,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
-                  ),
-                  child: Text(
-                    '#$tag',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                )).toList(),
+                children: post.tags
+                    .map((tag) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(
+                                AppSpacing.buttonRadiusPill),
+                          ),
+                          child: Text(
+                            '#$tag',
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.secondary,
+                            ),
+                          ),
+                        ))
+                    .toList(),
               ),
             ],
 
@@ -289,7 +298,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                         Icon(
                           post.isLiked ? Icons.favorite : Icons.favorite_border,
                           size: 20,
-                          color: post.isLiked ? AppColors.error : AppColors.textTertiary,
+                          color: post.isLiked
+                              ? AppColors.error
+                              : AppColors.textTertiary,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -476,7 +487,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     children: [
                       CircleAvatar(
                         radius: 24,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                        backgroundColor:
+                            AppColors.primary.withValues(alpha: 0.2),
                         child: Text(
                           widget.post.authorAvatar,
                           style: AppTypography.titleMedium.copyWith(
@@ -511,7 +523,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.secondary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                          borderRadius: BorderRadius.circular(
+                              AppSpacing.buttonRadiusPill),
                         ),
                         child: Text(
                           'Follow',
@@ -539,22 +552,26 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     const SizedBox(height: AppSpacing.md),
                     Wrap(
                       spacing: AppSpacing.sm,
-                      children: widget.post.tags.map((tag) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.secondary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
-                        ),
-                        child: Text(
-                          '#$tag',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: AppColors.secondary,
-                          ),
-                        ),
-                      )).toList(),
+                      children: widget.post.tags
+                          .map((tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(
+                                      AppSpacing.buttonRadiusPill),
+                                ),
+                                child: Text(
+                                  '#$tag',
+                                  style: AppTypography.bodySmall.copyWith(
+                                    color: AppColors.secondary,
+                                  ),
+                                ),
+                              ))
+                          .toList(),
                     ),
                   ],
 
@@ -654,7 +671,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                       filled: true,
                       fillColor: AppColors.inputBackground,
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.buttonRadiusPill),
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -678,7 +696,8 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     );
   }
 
-  Widget _buildComment(String name, String avatar, String content, DateTime timestamp) {
+  Widget _buildComment(
+      String name, String avatar, String content, DateTime timestamp) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(
@@ -752,8 +771,14 @@ class _NewPostSheetState extends State<NewPostSheet> {
   final List<String> _selectedTags = [];
 
   static const _availableTags = [
-    'meditation', 'gratitude', 'journaling', 'sleep',
-    'tips', 'question', 'milestone', 'motivation'
+    'meditation',
+    'gratitude',
+    'journaling',
+    'sleep',
+    'tips',
+    'question',
+    'milestone',
+    'motivation'
   ];
 
   @override
@@ -832,9 +857,7 @@ class _NewPostSheetState extends State<NewPostSheet> {
                       border: InputBorder.none,
                     ),
                   ),
-
                   const SizedBox(height: AppSpacing.lg),
-
                   Text(
                     'Add Tags',
                     style: AppTypography.titleSmall.copyWith(
@@ -870,7 +893,9 @@ class _NewPostSheetState extends State<NewPostSheet> {
                         selectedColor: AppColors.secondary,
                         checkmarkColor: AppColors.textPrimary,
                         side: BorderSide(
-                          color: isSelected ? AppColors.secondary : AppColors.divider,
+                          color: isSelected
+                              ? AppColors.secondary
+                              : AppColors.divider,
                         ),
                       );
                     }).toList(),

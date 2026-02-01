@@ -105,13 +105,13 @@ class ErrorScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Spacer(),
-              
+
               // Icon
               Container(
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: (iconColor ?? AppColors.error).withOpacity(0.2),
+                  color: (iconColor ?? AppColors.error).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -149,8 +149,10 @@ class ErrorScreen extends StatelessWidget {
                   text: buttonText!,
                   onPressed: onButtonPressed,
                 ),
-              
-              if (buttonText != null && onButtonPressed != null && showHomeButton)
+
+              if (buttonText != null &&
+                  onButtonPressed != null &&
+                  showHomeButton)
                 const SizedBox(height: AppSpacing.md),
 
               // Home button

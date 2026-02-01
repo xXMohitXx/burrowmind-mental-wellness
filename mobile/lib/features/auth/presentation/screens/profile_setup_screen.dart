@@ -24,7 +24,12 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   String? _selectedGender;
   final List<String> _selectedGoals = [];
 
-  final List<String> _genderOptions = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+  final List<String> _genderOptions = [
+    'Male',
+    'Female',
+    'Non-binary',
+    'Prefer not to say'
+  ];
   final List<String> _goalOptions = [
     'Reduce stress',
     'Improve sleep',
@@ -97,7 +102,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
           children: [
             // Progress indicator
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPaddingH),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screenPaddingH),
               child: Row(
                 children: List.generate(4, (index) {
                   return Expanded(
@@ -206,7 +212,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                 context: context,
                 initialDate: DateTime(2000),
                 firstDate: DateTime(1920),
-                lastDate: DateTime.now().subtract(const Duration(days: 365 * 13)),
+                lastDate:
+                    DateTime.now().subtract(const Duration(days: 365 * 13)),
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
@@ -232,7 +239,8 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_today, color: AppColors.textTertiary),
+                  const Icon(Icons.calendar_today,
+                      color: AppColors.textTertiary),
                   const SizedBox(width: AppSpacing.md),
                   Text(
                     _dateOfBirth != null
@@ -285,11 +293,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? AppColors.primary.withOpacity(0.2)
+                        ? AppColors.primary.withValues(alpha: 0.2)
                         : AppColors.inputBackground,
-                    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.buttonRadius),
                     border: Border.all(
-                      color: isSelected ? AppColors.primary : AppColors.inputBorder,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.inputBorder,
                     ),
                   ),
                   child: Row(
@@ -298,7 +309,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         isSelected
                             ? Icons.radio_button_checked
                             : Icons.radio_button_off,
-                        color: isSelected ? AppColors.primary : AppColors.textTertiary,
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.textTertiary,
                       ),
                       const SizedBox(width: AppSpacing.md),
                       Text(
@@ -365,11 +378,14 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withOpacity(0.2)
+                            ? AppColors.primary.withValues(alpha: 0.2)
                             : AppColors.inputBackground,
-                        borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.buttonRadiusPill),
                         border: Border.all(
-                          color: isSelected ? AppColors.primary : AppColors.inputBorder,
+                          color: isSelected
+                              ? AppColors.primary
+                              : AppColors.inputBorder,
                         ),
                       ),
                       child: Row(
