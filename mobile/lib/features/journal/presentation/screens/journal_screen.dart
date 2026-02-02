@@ -4,10 +4,11 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/buttons.dart';
+import '../../../../core/providers/journal_provider.dart' as provider;
 import '../widgets/journal_calendar.dart';
 import '../widgets/journal_entry_card.dart';
 
-/// Journal Entry Model
+/// Journal Entry Model - UI version (compatible with widgets)
 class JournalEntry {
   final String id;
   final String title;
@@ -29,53 +30,40 @@ class JournalEntry {
 
   String get moodEmoji {
     switch (mood) {
-      case 1: return '😢';
-      case 2: return '😔';
-      case 3: return '😐';
-      case 4: return '😊';
-      case 5: return '😄';
-      default: return '';
+      case 1:
+        return '😢';
+      case 2:
+        return '😔';
+      case 3:
+        return '😐';
+      case 4:
+        return '😊';
+      case 5:
+        return '😄';
+      default:
+        return '';
     }
+  }
+
+  /// Convert from provider model to UI model
+  factory JournalEntry.fromProvider(provider.JournalEntry entry) {
+    return JournalEntry(
+      id: entry.id,
+      title: entry.displayTitle,
+      content: entry.content,
+      timestamp: entry.createdAt,
+      mood: null, // TODO: Link to mood entry if needed
+      tags: entry.tags,
+      hasVoiceNote: entry.voiceRecordingPath != null,
+    );
   }
 }
 
-/// Mock journal entries provider
-final journalEntriesProvider = StateProvider<List<JournalEntry>>((ref) {
-  return [
-    JournalEntry(
-      id: '1',
-      title: 'Feeling grateful today',
-      content: 'Had a wonderful morning walk in the park. The fresh air really helped clear my mind. I\'m grateful for the little moments of peace.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      mood: 4,
-      tags: ['gratitude', 'morning'],
-    ),
-    JournalEntry(
-      id: '2',
-      title: 'Work stress',
-      content: 'Deadline pressure at work today. Need to remember to take breaks and practice deep breathing.',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      mood: 2,
-      tags: ['work', 'stress'],
-    ),
-    JournalEntry(
-      id: '3',
-      title: 'Weekend reflections',
-      content: 'Spent quality time with family. Remembered why these moments matter most.',
-      timestamp: DateTime.now().subtract(const Duration(days: 3)),
-      mood: 5,
-      tags: ['family', 'weekend'],
-      hasVoiceNote: true,
-    ),
-    JournalEntry(
-      id: '4',
-      title: 'Self-care Sunday',
-      content: 'Took the day to focus on myself. Meditation, reading, and a long bath.',
-      timestamp: DateTime.now().subtract(const Duration(days: 4)),
-      mood: 4,
-      tags: ['self-care'],
-    ),
-  ];
+/// Journal entries provider using the database-backed provider
+final journalEntriesProvider = Provider<AsyncValue<List<JournalEntry>>>((ref) {
+  return ref.watch(provider.journalEntriesProvider).whenData(
+        (entries) => entries.map((e) => JournalEntry.fromProvider(e)).toList(),
+      );
 });
 
 /// Journal Screen
@@ -149,143 +137,198 @@ class _JournalScreenState extends ConsumerState<JournalScreen>
   }
 
   Widget _buildEntriesTab() {
-    final entries = ref.watch(journalEntriesProvider);
+    final entriesAsync = ref.watch(journalEntriesProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Stats overview
-          _buildStatsCard(entries),
+    return entriesAsync.when(
+      data: (entries) => SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Stats overview
+            _buildStatsCard(entries),
 
-          const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.lg),
 
-          // Recent entries header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Recent Entries',
-                style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                child: Text(
-                  'See All',
-                  style: AppTypography.labelMedium.copyWith(
-                    color: AppColors.secondary,
+            // Recent entries header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Recent Entries',
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.textPrimary,
                   ),
                 ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          // Journal entries list
-          ...entries.map((entry) => Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.md),
-            child: JournalEntryCard(
-              entry: entry,
-              onTap: () => _openEntryDetail(entry),
+                TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    'See All',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: AppColors.secondary,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          )),
 
-          const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.md),
+
+            // Journal entries list
+            if (entries.isEmpty)
+              _buildEmptyState()
+            else
+              ...entries.map((entry) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: JournalEntryCard(
+                      entry: entry,
+                      onTap: () => _openEntryDetail(entry),
+                    ),
+                  )),
+
+            const SizedBox(height: AppSpacing.xxl),
+          ],
+        ),
+      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Text('Error loading entries: $e'),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.card,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.edit_note,
+            size: 48,
+            color: AppColors.textTertiary,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'No journal entries yet',
+            style: AppTypography.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SecondaryButton(
+            text: 'Write Your First Entry',
+            onPressed: () => _showNewEntrySheet(context),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildCalendarTab() {
-    final entries = ref.watch(journalEntriesProvider);
-    
-    // Get entries for selected date
-    final selectedEntries = entries.where((e) {
-      final entryDate = DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day);
-      final selected = DateTime(_selectedDate.year, _selectedDate.month, _selectedDate.day);
-      return entryDate == selected;
-    }).toList();
+    final entriesAsync = ref.watch(journalEntriesProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Calendar widget
-          JournalCalendar(
-            selectedDate: _selectedDate,
-            entries: entries,
-            onDateSelected: (date) {
-              setState(() => _selectedDate = date);
-            },
+    return entriesAsync.when(
+      data: (entries) {
+        // Get entries for selected date
+        final selectedEntries = entries.where((e) {
+          final entryDate =
+              DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day);
+          final selected = DateTime(
+              _selectedDate.year, _selectedDate.month, _selectedDate.day);
+          return entryDate == selected;
+        }).toList();
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.screenPaddingH),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Calendar widget
+              JournalCalendar(
+                selectedDate: _selectedDate,
+                entries: entries,
+                onDateSelected: (date) {
+                  setState(() => _selectedDate = date);
+                },
+              ),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              // Entries for selected date
+              Text(
+                _formatDateHeader(_selectedDate),
+                style: AppTypography.titleMedium.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+
+              const SizedBox(height: AppSpacing.md),
+
+              if (selectedEntries.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  decoration: BoxDecoration(
+                    color: AppColors.card,
+                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                    border: Border.all(color: AppColors.divider),
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.edit_note,
+                        size: 48,
+                        color: AppColors.textTertiary,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'No entries for this day',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      SecondaryButton(
+                        text: 'Write Entry',
+                        onPressed: () => _showNewEntrySheet(context),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...selectedEntries.map((entry) => Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                      child: JournalEntryCard(
+                        entry: entry,
+                        onTap: () => _openEntryDetail(entry),
+                      ),
+                    )),
+
+              const SizedBox(height: AppSpacing.xxl),
+            ],
           ),
-
-          const SizedBox(height: AppSpacing.lg),
-
-          // Entries for selected date
-          Text(
-            _formatDateHeader(_selectedDate),
-            style: AppTypography.titleMedium.copyWith(
-              color: AppColors.textPrimary,
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.md),
-
-          if (selectedEntries.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: AppColors.card,
-                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                border: Border.all(color: AppColors.divider),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.edit_note,
-                    size: 48,
-                    color: AppColors.textTertiary,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    'No entries for this day',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  SecondaryButton(
-                    text: 'Write Entry',
-                    onPressed: () => _showNewEntrySheet(context),
-                  ),
-                ],
-              ),
-            )
-          else
-            ...selectedEntries.map((entry) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.md),
-              child: JournalEntryCard(
-                entry: entry,
-                onTap: () => _openEntryDetail(entry),
-              ),
-            )),
-
-          const SizedBox(height: AppSpacing.xxl),
-        ],
+        );
+      },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(
+        child: Text('Error loading entries: $e'),
       ),
     );
   }
 
   Widget _buildStatsCard(List<JournalEntry> entries) {
-    final thisWeek = entries.where((e) =>
-        e.timestamp.isAfter(DateTime.now().subtract(const Duration(days: 7)))).length;
-    final thisMonth = entries.where((e) =>
-        e.timestamp.isAfter(DateTime.now().subtract(const Duration(days: 30)))).length;
+    final thisWeek = entries
+        .where((e) => e.timestamp
+            .isAfter(DateTime.now().subtract(const Duration(days: 7))))
+        .length;
+    final thisMonth = entries
+        .where((e) => e.timestamp
+            .isAfter(DateTime.now().subtract(const Duration(days: 30))))
+        .length;
     final streak = 5; // Mock streak
 
     return Container(
@@ -371,11 +414,22 @@ class _JournalScreenState extends ConsumerState<JournalScreen>
     final selected = DateTime(date.year, date.month, date.day);
 
     if (selected == today) return 'Today\'s Entries';
-    if (selected == today.subtract(const Duration(days: 1))) return 'Yesterday\'s Entries';
+    if (selected == today.subtract(const Duration(days: 1)))
+      return 'Yesterday\'s Entries';
 
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return 'Entries for ${months[date.month - 1]} ${date.day}';
   }
@@ -537,16 +591,19 @@ class JournalDetailScreen extends StatelessWidget {
             if (entry.tags.isNotEmpty) ...[
               Wrap(
                 spacing: AppSpacing.sm,
-                children: entry.tags.map((tag) => Chip(
-                  label: Text(
-                    '#$tag',
-                    style: AppTypography.caption.copyWith(
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                  backgroundColor: AppColors.secondary.withValues(alpha: 0.1),
-                  side: BorderSide.none,
-                )).toList(),
+                children: entry.tags
+                    .map((tag) => Chip(
+                          label: Text(
+                            '#$tag',
+                            style: AppTypography.caption.copyWith(
+                              color: AppColors.secondary,
+                            ),
+                          ),
+                          backgroundColor:
+                              AppColors.secondary.withValues(alpha: 0.1),
+                          side: BorderSide.none,
+                        ))
+                    .toList(),
               ),
               const SizedBox(height: AppSpacing.lg),
             ],
@@ -697,17 +754,30 @@ class JournalDetailScreen extends StatelessWidget {
     final entryDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
 
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
     ];
 
-    final hour = timestamp.hour > 12 ? timestamp.hour - 12 : (timestamp.hour == 0 ? 12 : timestamp.hour);
+    final hour = timestamp.hour > 12
+        ? timestamp.hour - 12
+        : (timestamp.hour == 0 ? 12 : timestamp.hour);
     final period = timestamp.hour >= 12 ? 'PM' : 'AM';
     final minute = timestamp.minute.toString().padLeft(2, '0');
     final time = '$hour:$minute $period';
 
     if (entryDate == today) return 'Today at $time';
-    if (entryDate == today.subtract(const Duration(days: 1))) return 'Yesterday at $time';
+    if (entryDate == today.subtract(const Duration(days: 1)))
+      return 'Yesterday at $time';
 
     return '${months[timestamp.month - 1]} ${timestamp.day}, ${timestamp.year} at $time';
   }
@@ -752,7 +822,8 @@ class JournalDetailScreen extends StatelessWidget {
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.bookmark_border, color: AppColors.textSecondary),
+              leading: const Icon(Icons.bookmark_border,
+                  color: AppColors.textSecondary),
               title: const Text('Bookmark'),
               onTap: () => Navigator.pop(context),
             ),
@@ -796,15 +867,25 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
   bool _isRecording = false;
 
   static const _availableTags = [
-    'gratitude', 'work', 'family', 'self-care', 'stress',
-    'health', 'goals', 'relationships', 'creativity', 'learning'
+    'gratitude',
+    'work',
+    'family',
+    'self-care',
+    'stress',
+    'health',
+    'goals',
+    'relationships',
+    'creativity',
+    'learning'
   ];
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.existingEntry?.title ?? '');
-    _contentController = TextEditingController(text: widget.existingEntry?.content ?? '');
+    _titleController =
+        TextEditingController(text: widget.existingEntry?.title ?? '');
+    _contentController =
+        TextEditingController(text: widget.existingEntry?.content ?? '');
     _selectedMood = widget.existingEntry?.mood;
     if (widget.existingEntry != null) {
       _selectedTags.addAll(widget.existingEntry!.tags);
@@ -911,14 +992,16 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                         onTap: () => setState(() => _selectedMood = mood),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: EdgeInsets.all(isSelected ? AppSpacing.md : AppSpacing.sm),
+                          padding: EdgeInsets.all(
+                              isSelected ? AppSpacing.md : AppSpacing.sm),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? AppColors.secondary.withValues(alpha: 0.2)
                                 : Colors.transparent,
                             shape: BoxShape.circle,
                             border: isSelected
-                                ? Border.all(color: AppColors.secondary, width: 2)
+                                ? Border.all(
+                                    color: AppColors.secondary, width: 2)
                                 : null,
                           ),
                           child: Text(
@@ -941,7 +1024,8 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                     maxLines: null,
                     minLines: 8,
                     decoration: InputDecoration(
-                      hintText: 'What\'s on your mind? Express your thoughts freely...',
+                      hintText:
+                          'What\'s on your mind? Express your thoughts freely...',
                       hintStyle: AppTypography.bodyMedium.copyWith(
                         color: AppColors.textTertiary,
                       ),
@@ -956,7 +1040,8 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
                       color: AppColors.card,
-                      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.cardRadius),
                       border: Border.all(color: AppColors.divider),
                     ),
                     child: Row(
@@ -971,7 +1056,9 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                           ),
                           child: Icon(
                             _isRecording ? Icons.stop : Icons.mic,
-                            color: _isRecording ? AppColors.error : AppColors.tertiary,
+                            color: _isRecording
+                                ? AppColors.error
+                                : AppColors.tertiary,
                             size: 20,
                           ),
                         ),
@@ -988,10 +1075,15 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                         ),
                         IconButton(
                           icon: Icon(
-                            _isRecording ? Icons.stop_circle : Icons.play_circle,
-                            color: _isRecording ? AppColors.error : AppColors.tertiary,
+                            _isRecording
+                                ? Icons.stop_circle
+                                : Icons.play_circle,
+                            color: _isRecording
+                                ? AppColors.error
+                                : AppColors.tertiary,
                           ),
-                          onPressed: () => setState(() => _isRecording = !_isRecording),
+                          onPressed: () =>
+                              setState(() => _isRecording = !_isRecording),
                         ),
                       ],
                     ),
@@ -1016,7 +1108,9 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                         label: Text(
                           '#$tag',
                           style: AppTypography.caption.copyWith(
-                            color: isSelected ? AppColors.textPrimary : AppColors.textSecondary,
+                            color: isSelected
+                                ? AppColors.textPrimary
+                                : AppColors.textSecondary,
                           ),
                         ),
                         selected: isSelected,
@@ -1033,7 +1127,9 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
                         selectedColor: AppColors.secondary,
                         checkmarkColor: AppColors.textPrimary,
                         side: BorderSide(
-                          color: isSelected ? AppColors.secondary : AppColors.divider,
+                          color: isSelected
+                              ? AppColors.secondary
+                              : AppColors.divider,
                         ),
                       );
                     }).toList(),
@@ -1054,7 +1150,8 @@ class _NewJournalEntrySheetState extends State<NewJournalEntrySheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(widget.existingEntry != null ? 'Entry updated!' : 'Entry saved!'),
+        content: Text(
+            widget.existingEntry != null ? 'Entry updated!' : 'Entry saved!'),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
       ),

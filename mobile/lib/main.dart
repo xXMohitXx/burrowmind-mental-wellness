@@ -3,9 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'data/local/database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize web database factory if on web platform
+  AppDatabase.ensureWebInitialized();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(

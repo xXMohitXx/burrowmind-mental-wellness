@@ -1,10 +1,13 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database_providers.dart';
+import 'auth_lifecycle_provider.dart';
 
-/// Current user ID provider (simulated - would come from auth)
-final currentUserIdProvider = StateProvider<String>((ref) {
-  return 'user-001'; // Placeholder - replace with actual auth
-});
+// Note: currentUserIdProvider is now defined in auth_lifecycle_provider.dart
+// and imported here for use across the app
+
+/// In-memory storage for web platform (SQLite not supported)
+final List<MoodEntry> _webMoodStorage = [];
 
 /// Mood Entry State
 class MoodEntry {
@@ -85,6 +88,13 @@ class MoodNotifier extends StateNotifier<AsyncValue<List<MoodEntry>>> {
   Future<void> loadMoods() async {
     try {
       state = const AsyncValue.loading();
+
+      // Web platform: use in-memory storage (SQLite not supported)
+      if (kIsWeb) {
+        state = AsyncValue.data(List.from(_webMoodStorage));
+        return;
+      }
+
       final userId = _ref.read(currentUserIdProvider);
       final moodDao = _ref.read(moodDaoProvider);
       final entries = await moodDao.getMoodEntries(userId: userId, limit: 50);
@@ -96,6 +106,21 @@ class MoodNotifier extends StateNotifier<AsyncValue<List<MoodEntry>>> {
   }
 
   Future<MoodEntry?> getTodaysMood() async {
+    // Web platform: check in-memory storage
+    if (kIsWeb) {
+      final today = DateTime.now();
+      try {
+        return _webMoodStorage.firstWhere(
+          (m) =>
+              m.createdAt.year == today.year &&
+              m.createdAt.month == today.month &&
+              m.createdAt.day == today.day,
+        );
+      } catch (_) {
+        return null;
+      }
+    }
+
     final userId = _ref.read(currentUserIdProvider);
     final moodDao = _ref.read(moodDaoProvider);
     final mood = await moodDao.getTodaysMood(userId);
@@ -108,6 +133,22 @@ class MoodNotifier extends StateNotifier<AsyncValue<List<MoodEntry>>> {
     List<String>? factors,
     String? notes,
   }) async {
+    final newMood = MoodEntry(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      moodLevel: moodLevel,
+      moodEmoji: moodEmoji,
+      factors: factors ?? [],
+      notes: notes,
+      createdAt: DateTime.now(),
+    );
+
+    // Web platform: store in-memory only
+    if (kIsWeb) {
+      _webMoodStorage.insert(0, newMood);
+      state = AsyncValue.data(List.from(_webMoodStorage));
+      return;
+    }
+
     final userId = _ref.read(currentUserIdProvider);
     final moodDao = _ref.read(moodDaoProvider);
 
@@ -123,6 +164,19 @@ class MoodNotifier extends StateNotifier<AsyncValue<List<MoodEntry>>> {
   }
 
   Future<double?> getWeeklyAverage() async {
+    // Web platform: calculate from in-memory storage
+    if (kIsWeb) {
+      final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+      final weeklyMoods = _webMoodStorage
+          .where(
+            (m) => m.createdAt.isAfter(weekAgo),
+          )
+          .toList();
+      if (weeklyMoods.isEmpty) return null;
+      final sum = weeklyMoods.fold<int>(0, (acc, m) => acc + m.moodLevel);
+      return sum / weeklyMoods.length;
+    }
+
     final userId = _ref.read(currentUserIdProvider);
     final moodDao = _ref.read(moodDaoProvider);
     final now = DateTime.now();
@@ -135,6 +189,16 @@ class MoodNotifier extends StateNotifier<AsyncValue<List<MoodEntry>>> {
   }
 
   Future<List<MoodEntry>> getWeeklyMoods() async {
+    // Web platform: filter from in-memory storage
+    if (kIsWeb) {
+      final weekAgo = DateTime.now().subtract(const Duration(days: 7));
+      return _webMoodStorage
+          .where(
+            (m) => m.createdAt.isAfter(weekAgo),
+          )
+          .toList();
+    }
+
     final userId = _ref.read(currentUserIdProvider);
     final moodDao = _ref.read(moodDaoProvider);
     final now = DateTime.now();

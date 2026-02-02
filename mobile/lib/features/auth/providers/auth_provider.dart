@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/providers/auth_lifecycle_provider.dart';
 
 /// Auth state enum
 enum AuthStatus {
@@ -49,8 +50,9 @@ class AuthState {
 /// Auth provider notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final FlutterSecureStorage _storage;
+  final Ref _ref;
 
-  AuthNotifier(this._storage) : super(const AuthState()) {
+  AuthNotifier(this._storage, this._ref) : super(const AuthState()) {
     _checkAuthStatus();
   }
 
@@ -61,9 +63,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final accessToken = await _storage.read(key: AppConstants.accessTokenKey);
       final userId = await _storage.read(key: AppConstants.userIdKey);
-      final onboarding = await _storage.read(key: AppConstants.onboardingCompleteKey);
+      final onboarding =
+          await _storage.read(key: AppConstants.onboardingCompleteKey);
 
       if (accessToken != null && userId != null) {
+        // Update current user ID for other providers
+        _ref.read(currentUserIdProvider.notifier).state = userId;
+
         state = AuthState(
           status: AuthStatus.authenticated,
           userId: userId,
@@ -99,6 +105,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.write(key: AppConstants.accessTokenKey, value: mockToken);
       await _storage.write(key: AppConstants.userIdKey, value: mockUserId);
 
+      // Update current user ID and refresh providers
+      await _ref.read(authLifecycleServiceProvider).onUserLogin(mockUserId);
+
       state = const AuthState(
         status: AuthStatus.authenticated,
         userId: mockUserId,
@@ -131,7 +140,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       await _storage.write(key: AppConstants.accessTokenKey, value: mockToken);
       await _storage.write(key: AppConstants.userIdKey, value: mockUserId);
-      await _storage.write(key: AppConstants.onboardingCompleteKey, value: 'false');
+      await _storage.write(
+          key: AppConstants.onboardingCompleteKey, value: 'false');
 
       state = const AuthState(
         status: AuthStatus.authenticated,
@@ -147,20 +157,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Sign out
+  /// Sign out - clears all user data
   Future<void> signOut() async {
+    final userId = state.userId;
     state = state.copyWith(status: AuthStatus.loading);
 
+    // Clear user data and reset providers BEFORE clearing auth
+    if (userId != null) {
+      await _ref.read(authLifecycleServiceProvider).clearUserData(userId);
+    }
+
+    // Clear secure storage
     await _storage.delete(key: AppConstants.accessTokenKey);
     await _storage.delete(key: AppConstants.refreshTokenKey);
     await _storage.delete(key: AppConstants.userIdKey);
+    await _storage.delete(key: AppConstants.onboardingCompleteKey);
+
+    // Reset current user ID
+    _ref.read(currentUserIdProvider.notifier).state = '';
 
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
   /// Complete onboarding
   Future<void> completeOnboarding() async {
-    await _storage.write(key: AppConstants.onboardingCompleteKey, value: 'true');
+    await _storage.write(
+        key: AppConstants.onboardingCompleteKey, value: 'true');
     state = state.copyWith(onboardingComplete: true);
   }
 }
@@ -173,5 +195,5 @@ final secureStorageProvider = Provider<FlutterSecureStorage>((ref) {
 /// Auth provider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final storage = ref.watch(secureStorageProvider);
-  return AuthNotifier(storage);
+  return AuthNotifier(storage, ref);
 });

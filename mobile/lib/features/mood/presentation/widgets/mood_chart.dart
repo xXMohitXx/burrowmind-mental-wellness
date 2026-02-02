@@ -5,7 +5,7 @@ import '../../../../core/theme/app_typography.dart';
 
 /// Mood Chart - Weekly bar chart visualization
 class MoodChart extends StatelessWidget {
-  final List<int> moodData; // 1-5 scale
+  final List<double> moodData; // 1-5 scale (can be averages)
   final List<String> labels;
 
   const MoodChart({
@@ -14,8 +14,9 @@ class MoodChart extends StatelessWidget {
     required this.labels,
   });
 
-  Color _getMoodColor(int mood) {
-    switch (mood) {
+  Color _getMoodColor(double mood) {
+    final m = mood.round();
+    switch (m) {
       case 1:
         return AppColors.moodTerrible;
       case 2:
@@ -31,8 +32,9 @@ class MoodChart extends StatelessWidget {
     }
   }
 
-  String _getMoodEmoji(int mood) {
-    switch (mood) {
+  String _getMoodEmoji(double mood) {
+    final m = mood.round();
+    switch (m) {
       case 1:
         return '😢';
       case 2:
@@ -102,8 +104,11 @@ class MoodChart extends StatelessWidget {
                     Text(
                       labels[index],
                       style: AppTypography.caption.copyWith(
-                        color: isToday ? AppColors.textPrimary : AppColors.textTertiary,
-                        fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
+                        color: isToday
+                            ? AppColors.textPrimary
+                            : AppColors.textTertiary,
+                        fontWeight:
+                            isToday ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                   ],

@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/providers/wellness_score_provider.dart';
 
-/// Home Screen - Main Dashboard
-class HomeScreen extends StatelessWidget {
+/// Home Screen - Main Dashboard with Reactive Wellness Score
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wellnessScore = ref.watch(wellnessScoreProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -23,7 +27,7 @@ class HomeScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Good Morning',
+                    _getGreeting(),
                     style: AppTypography.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -52,7 +56,7 @@ class HomeScreen extends StatelessWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   // Mental Health Score Card
-                  _buildScoreCard(),
+                  _buildScoreCard(wellnessScore),
 
                   const SizedBox(height: AppSpacing.lg),
 
@@ -108,87 +112,131 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreCard() {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.surface,
-            Color(0xFF1E1A18),
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
+  Widget _buildScoreCard(AsyncValue<WellnessScore> wellnessScore) {
+    return wellnessScore.when(
+      data: (score) => Container(
+        padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.surface,
+              Color(0xFF1E1A18),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusLarge),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Mental Wellness',
+                  style: AppTypography.titleMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.sm,
+                    vertical: AppSpacing.xs,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _getScoreColor(score.overallScore)
+                        .withValues(alpha: 0.2),
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.buttonRadiusPill),
+                  ),
+                  child: Text(
+                    score.label,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: _getScoreColor(score.overallScore),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${score.overallScore}',
+                  style: AppTypography.scoreDisplay.copyWith(
+                    color: _getScoreColor(score.overallScore),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text(
+                    '/100',
+                    style: AppTypography.titleLarge.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              score.insight,
+              style: AppTypography.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            // Score components
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildScoreComponent(
+                    'Mood', score.moodScore, AppColors.moodGood),
+                _buildScoreComponent(
+                    'Sleep', score.sleepScore, AppColors.sleepGood),
+                _buildScoreComponent(
+                    'Activity', score.activityScore, AppColors.primary),
+              ],
+            ),
           ],
         ),
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadiusLarge),
-        border: Border.all(color: AppColors.divider),
       ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Mental Wellness',
-                style: AppTypography.titleMedium.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm,
-                  vertical: AppSpacing.xs,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.2),
-                  borderRadius:
-                      BorderRadius.circular(AppSpacing.buttonRadiusPill),
-                ),
-                child: Text(
-                  'Good',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '72',
-                style: AppTypography.scoreDisplay.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  '/100',
-                  style: AppTypography.titleLarge.copyWith(
-                    color: AppColors.textTertiary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          // Score components
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildScoreComponent('Mood', 80, AppColors.moodGood),
-              _buildScoreComponent('Sleep', 65, AppColors.sleepGood),
-              _buildScoreComponent('Stress', 45, AppColors.stressLow),
-              _buildScoreComponent('Activity', 90, AppColors.primary),
-            ],
-          ),
-        ],
+      loading: () => Container(
+        padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusLarge),
+          border: Border.all(color: AppColors.divider),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, __) => Container(
+        padding: const EdgeInsets.all(AppSpacing.cardPaddingLarge),
+        decoration: BoxDecoration(
+          color: AppColors.card,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusLarge),
+        ),
+        child: const Text('Error loading score'),
       ),
     );
+  }
+
+  Color _getScoreColor(int score) {
+    if (score >= 80) return AppColors.scoreHigh;
+    if (score >= 60) return AppColors.primary;
+    if (score >= 40) return AppColors.scoreMedium;
+    return AppColors.scoreLow;
   }
 
   Widget _buildScoreComponent(String label, int score, Color color) {

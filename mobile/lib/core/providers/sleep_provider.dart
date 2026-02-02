@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database_providers.dart';
-import 'mood_provider.dart';
+import 'auth_lifecycle_provider.dart';
+
+/// In-memory storage for web platform (SQLite not supported)
+final List<SleepEntry> _webSleepStorage = [];
 
 /// Sleep Entry State
 class SleepEntry {
@@ -74,6 +78,13 @@ class SleepNotifier extends StateNotifier<AsyncValue<List<SleepEntry>>> {
   Future<void> loadSleepEntries() async {
     try {
       state = const AsyncValue.loading();
+
+      // Web platform: use in-memory storage
+      if (kIsWeb) {
+        state = AsyncValue.data(List.from(_webSleepStorage));
+        return;
+      }
+
       final userId = _ref.read(currentUserIdProvider);
       final sleepDao = _ref.read(sleepDaoProvider);
       final entries = await sleepDao.getSleepEntries(userId: userId, limit: 30);

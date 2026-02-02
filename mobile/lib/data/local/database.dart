@@ -1,17 +1,42 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../../core/constants/app_constants.dart';
 
+/// Exception thrown when attempting to use SQLite on web platform
+class WebPlatformException implements Exception {
+  final String message;
+  WebPlatformException([this.message = 'SQLite not supported on web platform']);
+  @override
+  String toString() => message;
+}
+
 /// SQLite Database Manager for BurrowMind
 /// Handles all local data persistence
+/// Note: SQLite is NOT supported on web. Providers should use in-memory storage for web.
 class AppDatabase {
   static Database? _database;
   static final AppDatabase instance = AppDatabase._internal();
 
   AppDatabase._internal();
 
+  /// Check if running on web platform (SQLite not supported)
+  static bool get isWebPlatform => kIsWeb;
+
+  /// No-op for web initialization - providers should check isWebPlatform
+  static void ensureWebInitialized() {
+    // No-op: web platforms should use in-memory storage in providers
+  }
+
   Future<Database> get database async {
+    // Web platform doesn't support sqflite
+    if (kIsWeb) {
+      throw WebPlatformException(
+        'SQLite is not supported on web. Use in-memory storage instead.',
+      );
+    }
+
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;

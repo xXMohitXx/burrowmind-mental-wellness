@@ -40,9 +40,7 @@ dependencies:
   cached_network_image: ^3.3.1
   shimmer: ^3.0.0
   
-  # Notifications
-  flutter_local_notifications: ^17.2.2
-  
+
   # Icons
   cupertino_icons: ^1.0.8
   http: ^1.6.0
@@ -64,13 +62,14 @@ flutter:
     - assets/icons/
     - assets/illustrations/
   
-  fonts:
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter-Regular.ttf
-        - asset: assets/fonts/Inter-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Inter-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Inter-Bold.ttf
-          weight: 700
+  # Fonts - uncomment when font files are added to assets/fonts/
+  # fonts:
+  #   - family: Inter
+  #     fonts:
+  #       - asset: assets/fonts/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Inter-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Inter-Bold.ttf
+  #         weight: 700

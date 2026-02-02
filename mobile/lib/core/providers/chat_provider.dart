@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'auth_lifecycle_provider.dart';
 import 'database_providers.dart';
-import 'mood_provider.dart';
+import 'user_context_provider.dart';
 
 /// API Configuration
 class ApiConfig {
@@ -167,6 +168,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 
   Future<String> _callChatAPI(String message) async {
+    // Get user context for personalized responses
+    final userContext = _ref.read(userContextSummaryProvider);
+
     try {
       // Try to call backend API
       final response = await http
@@ -176,6 +180,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
             body: jsonEncode({
               'message': message,
               'session_id': state.sessionId,
+              'user_context': userContext,
             }),
           )
           .timeout(const Duration(seconds: 30));
@@ -187,12 +192,26 @@ class ChatNotifier extends StateNotifier<ChatState> {
       throw Exception('API error: ${response.statusCode}');
     } catch (e) {
       // Fallback to local responses if API unavailable
-      return _getLocalResponse(message);
+      return _getLocalResponse(message, userContext);
     }
   }
 
-  String _getLocalResponse(String message) {
+  String _getLocalResponse(String message, String userContext) {
     final lowerMessage = message.toLowerCase();
+
+    // ==========================================
+    // CRISIS DETECTION - ALWAYS CHECK FIRST
+    // ==========================================
+    final crisisResponse = _checkForCrisisSignals(lowerMessage);
+    if (crisisResponse != null) {
+      return crisisResponse;
+    }
+
+    // Build context-aware intro if we have user data
+    String contextIntro = '';
+    if (userContext.isNotEmpty && !userContext.contains('has not logged any')) {
+      contextIntro = 'Based on your recent tracking, ';
+    }
 
     if (lowerMessage.contains('anxious') || lowerMessage.contains('anxiety')) {
       return "I hear that you're feeling anxious. That's a common experience, and it's okay to feel this way. "
@@ -209,6 +228,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           "1. Reach out to someone you trust - connection can be healing.\n"
           "2. Try gentle movement like a short walk.\n"
           "3. Be kind to yourself - you deserve compassion.\n\n"
+          "If these feelings persist or feel overwhelming, please consider speaking with a counselor or therapist who can provide personalized support.\n\n"
           "Would you like to talk more about what's on your mind?";
     }
 
@@ -222,7 +242,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
 
     if (lowerMessage.contains('stress')) {
-      return "Stress is something we all experience. Here are some strategies:\n\n"
+      return "${contextIntro}Stress is something we all experience. Here are some strategies:\n\n"
           "1. Identify what you can control vs. what you can't.\n"
           "2. Break big tasks into smaller, manageable steps.\n"
           "3. Take regular breaks and practice self-care.\n"
@@ -238,6 +258,18 @@ class ChatNotifier extends StateNotifier<ChatState> {
           "Would you like to journal about what's going well? Capturing these moments can be helpful on harder days.";
     }
 
+    if (lowerMessage.contains('how am i doing') ||
+        lowerMessage.contains('my progress') ||
+        lowerMessage.contains('my trends')) {
+      if (userContext.isNotEmpty) {
+        return "Here's a summary of your recent wellness data:\n\n$userContext\n\n"
+            "Would you like tips on improving any specific area?";
+      } else {
+        return "I don't have much data to share yet. Try logging your mood and sleep regularly, "
+            "and I'll be able to give you personalized insights!";
+      }
+    }
+
     // Default supportive response
     return "Thank you for sharing that with me. I'm here to listen and support you. "
         "Would you like to:\n\n"
@@ -246,6 +278,121 @@ class ChatNotifier extends StateNotifier<ChatState> {
         "• Write in your journal\n"
         "• Talk more about what's on your mind\n\n"
         "What feels right for you?";
+  }
+
+  /// Check for crisis signals and return appropriate safety response
+  /// Returns null if no crisis detected
+  String? _checkForCrisisSignals(String message) {
+    // High-risk keywords indicating immediate danger
+    final immediateRiskPatterns = [
+      'kill myself',
+      'end my life',
+      'suicide',
+      'want to die',
+      'don\'t want to live',
+      'don\'t want to be alive',
+      'better off dead',
+      'no reason to live',
+      'hurt myself',
+      'self harm',
+      'self-harm',
+      'cutting myself',
+    ];
+
+    // Medium-risk keywords indicating distress
+    final distressPatterns = [
+      'want to disappear',
+      'i feel empty',
+      'nothing matters',
+      'hopeless',
+      'no point',
+      'can\'t go on',
+      'give up',
+      'hate myself',
+      'worthless',
+      'burden to everyone',
+      'everyone would be better',
+      'can\'t take it anymore',
+    ];
+
+    // Check for immediate risk
+    for (final pattern in immediateRiskPatterns) {
+      if (message.contains(pattern)) {
+        return _getImmediateCrisisResponse();
+      }
+    }
+
+    // Check for distress signals
+    for (final pattern in distressPatterns) {
+      if (message.contains(pattern)) {
+        return _getDistressResponse(pattern);
+      }
+    }
+
+    return null;
+  }
+
+  /// Response for immediate crisis situations
+  String _getImmediateCrisisResponse() {
+    return """I'm really concerned about what you're sharing, and I want you to know that your life matters. What you're feeling right now is temporary, even if it doesn't feel that way.
+
+**Please reach out to someone who can help right now:**
+
+🆘 **Crisis Helplines:**
+• 988 Suicide & Crisis Lifeline (US): Call or text **988**
+• International Association for Suicide Prevention: https://www.iasp.info/resources/Crisis_Centres/
+• iCall (India): **9152987821**
+• Vandrevala Foundation (India): **1860-2662-345**
+
+You don't have to face this alone. A trained counselor can provide the support you need right now.
+
+**While you wait or if you're not ready to call:**
+• Stay with someone you trust if possible
+• Remove anything you might use to hurt yourself
+• Focus on getting through the next few minutes
+
+Would you like me to help you with a grounding exercise while you decide what to do next?""";
+  }
+
+  /// Response for distress but not immediate crisis
+  String _getDistressResponse(String trigger) {
+    String specificMessage = '';
+
+    if (trigger.contains('empty') || trigger.contains('hopeless')) {
+      specificMessage =
+          "Feeling empty or hopeless can be incredibly difficult. These feelings are valid, but they don't have to be permanent.";
+    } else if (trigger.contains('disappear') || trigger.contains('give up')) {
+      specificMessage =
+          "It sounds like you're going through a really hard time. Wanting to escape pain is understandable.";
+    } else if (trigger.contains('hate myself') ||
+        trigger.contains('worthless')) {
+      specificMessage =
+          "I'm sorry you're being so hard on yourself. The way you're feeling about yourself right now isn't the whole truth.";
+    } else if (trigger.contains('nothing matters') ||
+        trigger.contains('no point')) {
+      specificMessage =
+          "When everything feels meaningless, it can be overwhelming. These feelings often point to exhaustion or depression.";
+    } else {
+      specificMessage =
+          "What you're feeling sounds really difficult. Please know that you're not alone.";
+    }
+
+    return """$specificMessage
+
+**I'm not able to provide the support you might need, but these resources can:**
+
+• Talk to a trusted friend, family member, or counselor
+• 988 Suicide & Crisis Lifeline: Call or text **988** (US)
+• AASRA (India): **9820466726**
+• Your doctor or a mental health professional
+
+**Right now, let's try something together:**
+
+Take a slow breath with me. Breathe in for 4 counts... hold for 4... and breathe out for 6.
+
+This app is here to help with daily wellness, but a real person can provide the deeper support you deserve. You matter, and asking for help is a sign of strength.
+
+Would you like to talk about what's been happening, or try a grounding exercise?""";
   }
 
   void startNewSession() {
@@ -268,6 +415,7 @@ final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
 /// Chat suggestions
 final chatSuggestionsProvider = Provider<List<String>>((ref) {
   return [
+    "How am I doing?",
     "I'm feeling anxious today",
     "Help me relax",
     "I can't sleep well",

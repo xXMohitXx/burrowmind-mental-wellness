@@ -1,6 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database_providers.dart';
-import 'mood_provider.dart';
+import 'auth_lifecycle_provider.dart';
+
+/// In-memory storage for web platform (SQLite not supported)
+final List<JournalEntry> _webJournalStorage = [];
 
 /// Journal Entry State
 class JournalEntry {
@@ -61,6 +65,13 @@ class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
   Future<void> loadJournalEntries() async {
     try {
       state = const AsyncValue.loading();
+
+      // Web platform: use in-memory storage
+      if (kIsWeb) {
+        state = AsyncValue.data(List.from(_webJournalStorage));
+        return;
+      }
+
       final userId = _ref.read(currentUserIdProvider);
       final journalDao = _ref.read(journalDaoProvider);
       final entries =
@@ -73,6 +84,15 @@ class JournalNotifier extends StateNotifier<AsyncValue<List<JournalEntry>>> {
   }
 
   Future<JournalEntry?> getById(String id) async {
+    // Web platform: find in memory
+    if (kIsWeb) {
+      try {
+        return _webJournalStorage.firstWhere((e) => e.id == id);
+      } catch (_) {
+        return null;
+      }
+    }
+
     final journalDao = _ref.read(journalDaoProvider);
     final entry = await journalDao.getJournalById(id);
     return entry != null ? JournalEntry.fromMap(entry) : null;
